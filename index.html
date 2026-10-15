@@ -110,13 +110,13 @@ h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:
 .postit.mini p{font-size:13.5px}
 
 /* Timeline */
-.tl{list-style:none;margin:0;padding:0;position:relative;display:flex;flex-direction:column;gap:10px}
+.tl{list-style:none;margin:0;padding:0;position:relative;display:flex;flex-direction:column;gap:8px}
 .tl::before{content:"";position:absolute;left:55px;top:10px;bottom:10px;width:2px;background:var(--line);border-radius:1px}
 .tl-row{display:grid;grid-template-columns:46px 20px minmax(0,1fr);align-items:start}
-.tl-time{font-family:var(--f-mono);font-size:12.5px;font-weight:700;text-align:right;padding-top:13px;line-height:1.15;font-variant-numeric:tabular-nums}
+.tl-time{font-family:var(--f-mono);font-size:12.5px;font-weight:700;text-align:right;padding-top:9px;line-height:1.15;font-variant-numeric:tabular-nums}
 .tl-time small{display:block;font-weight:500;color:var(--muted);font-size:10.5px;margin-top:2px}
-.tl-node{width:12px;height:12px;border-radius:50%;background:var(--rc);margin:16px auto 0;box-shadow:0 0 0 3px var(--bg);position:relative;z-index:1}
-.tl-row.untimed .tl-node{background:var(--bg);border:2px solid var(--rc);width:10px;height:10px;margin-top:17px}
+.tl-node{width:12px;height:12px;border-radius:50%;background:var(--rc);margin:14px auto 0;box-shadow:0 0 0 3px var(--bg);position:relative;z-index:1}
+.tl-row.untimed .tl-node{background:var(--bg);border:2px solid var(--rc);width:10px;height:10px;margin-top:15px}
 .tl-row.done .tl-node{background:var(--bg);border:2px solid color-mix(in srgb, var(--rc) 50%, transparent)}
 .tl-row.done .tl-time{color:var(--muted)}
 .tl-stack{display:flex;flex-direction:column;gap:6px;min-width:0}
@@ -129,31 +129,47 @@ h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:
 .tl-now hr{border:0;height:2px;background:var(--accent);margin:0;border-radius:1px;opacity:.6}
 
 /* Tarjeta */
-.tcard{background:var(--rc);color:var(--ri);border:2px solid var(--rc);border-radius:14px;padding:9px 8px 6px 10px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:0 10px;align-items:center;transition:background .25s ease, color .25s ease, border-color .25s ease}
-.tcard .check{width:28px;height:28px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center;flex:none}
-.tcard .check svg{width:15px;height:15px;opacity:0;transition:opacity .2s}
-.tcard .body{min-width:0;display:flex;flex-direction:column;gap:2px;padding:2px 0}
-.tcard .name{font-weight:650;font-size:16px;line-height:1.25;overflow-wrap:anywhere;text-align:left}
+.tcard{background:var(--rc);color:var(--ri);border:2px solid var(--rc);border-radius:13px;padding:6px 7px 6px 9px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:0 9px;align-items:center;transition:background .25s ease, color .25s ease, border-color .25s ease}
+.tcard .check{width:25px;height:25px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center;flex:none}
+.tcard .check svg{width:13px;height:13px;opacity:0;transition:opacity .2s}
+.tcard .body{min-width:0;display:flex;flex-direction:column;gap:1px;padding:1px 0}
+.tcard .name{font-weight:650;font-size:15.5px;line-height:1.25;overflow-wrap:anywhere;text-align:left}
 .strike{background-image:linear-gradient(currentColor,currentColor);background-repeat:no-repeat;background-position:0 55%;background-size:0% 2px;transition:background-size .35s ease}
-.tcard .meta{display:flex;flex-wrap:wrap;gap:3px 10px;font-size:12.5px;align-items:center;opacity:.92}
+.tcard .meta{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:12.5px;align-items:center;opacity:.92;min-height:17px}
 .tcard .meta svg{width:12px;height:12px;vertical-align:-1px;margin-right:2px}
 .tcard .chip{font-weight:700;font-size:11.5px;padding:1px 6px;border-radius:5px;background:color-mix(in srgb, currentColor 18%, transparent)}
 .tcard .spent{font-weight:700;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px;font-size:12.5px}
 .tcard .spent-edit{display:inline-flex;gap:6px;align-items:center}
 .tcard .spent-edit input{width:62px;padding:3px 6px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
 .tcard .spent-edit button{font-weight:700;text-decoration:underline}
-.tcard .play{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb, currentColor 20%, transparent);flex:none}
-.tcard .play svg{width:16px;height:16px}
-.tcard .grp{grid-column:2 / 4;justify-self:end;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.8;margin-top:1px}
+.tcard .play{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb, currentColor 20%, transparent);flex:none}
+.tcard .play svg{width:13px;height:13px}
+.tcard .grp{margin-left:auto;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.85;white-space:nowrap;padding-left:4px}
 .tcard.done{background:transparent;color:var(--muted);border-color:color-mix(in srgb, var(--rc) 45%, transparent)}
 .tcard.done .check{background:var(--rc);border-color:var(--rc);color:var(--ri)}
 .tcard.done .check svg{opacity:1}
 .tcard.done .strike{background-size:100% 2px}
 .tcard.done .grp{color:var(--rc);opacity:1}
+.tcard.done .chip{background:var(--sunk)}
 .tcard.done .play{background:var(--sunk)}
 .tcard.running{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--rc)}
 .tcard.running .play{background:var(--ri);color:var(--rc)}
 
+.tl-row[data-drag] .tcard{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.tl-row.dragging{position:relative;z-index:30}
+.tl-row.dragging .tcard{box-shadow:0 14px 30px -10px rgba(0,0,0,.45);transform:scale(1.02)}
+body.drag-active{-webkit-user-select:none;user-select:none;cursor:grabbing}
+.tl-group{display:grid;grid-template-columns:46px 20px minmax(0,1fr);align-items:center;margin-top:4px}
+.tl-group .tl-node{margin:0 auto;width:14px;height:14px;border-radius:4px}
+.tl-group .gname{display:flex;align-items:baseline;gap:8px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:var(--rc)}
+.tl-group .gname small{font-family:var(--f-mono);letter-spacing:0;font-weight:700;color:var(--muted);font-size:11.5px}
+.tl-sep .sepline{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.tl-sep .sepline b{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.tl-sep .sepline button{font-size:12px;font-weight:650;color:var(--accent);padding:4px 0}
+#toast{position:fixed;z-index:35;left:max(16px, env(safe-area-inset-left, 0px));right:92px;bottom:calc(64px + var(--sab) + 24px);max-width:440px;background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 12px 10px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 10px 26px -10px rgba(0,0,0,.5);font-size:14px}
+#toast span{flex:1;min-width:0}
+#toast button{font-weight:750;color:var(--accent);padding:6px 4px;filter:brightness(1.35)}
+body.running #toast{bottom:calc(64px + var(--sab) + 98px)}
 .carry{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--accent-soft);border-radius:10px;padding:6px 10px;font-size:13.5px}
 
 /* Botón + */
@@ -268,6 +284,7 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
   <button data-act="tab" data-tab="progreso"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V12M10 20V6M15 20v-9M20 20V9"/></svg>Progreso</button>
 </div></nav>
 <div id="sheet" hidden></div>
+<div id="toast" role="status" hidden></div>
 
 <script src="config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -314,7 +331,7 @@ const ICON = {
 /* ---------- estado ---------- */
 // mode: loading | setup | login | local | cloud
 const S = { groups:{}, routines:{}, notes:{}, settings:{ wake:'07:30', sleepHours:8 }, days:{}, mode:'loading', got:{}, err:'', user:null };
-const UI = { tab:'hoy', date: today(), range:'week', offset:0, editSpent:null, sheet:null, draft:null, confirmDel:false, showArchived:false, authMsg:null, authBusy:false };
+const UI = { tab:'hoy', date: today(), range:'week', offset:0, editSpent:null, sheet:null, draft:null, confirmDel:false, showArchived:false, confirmPurge:null, authMsg:null, authBusy:false };
 let RUN = lsGet('rutinas-run');
 let FS = null, BASE = '', UNSUB = [];
 
@@ -377,8 +394,22 @@ function removeRoutineDoc(id){ delete S.routines[id]; write('routines/' + id, nu
 function saveSettings(){ write('config/settings', { ...S.settings }); }
 const hasHistory = rid => Object.values(S.days).some(d => d.items?.[rid] && (d.items[rid].done || d.items[rid].spentSec));
 function endRoutine(r){
-  if (!hasHistory(r.id) && (!r.createdAt || r.createdAt >= today())){ removeRoutineDoc(r.id); return; }
+  // Nunca se borra del todo aquí: pasa a «Rutinas eliminadas» y se puede recuperar.
   const nr = clone(S.routines[r.id]); nr.endedAt = today(); saveRoutine(nr);
+}
+
+/* ---------- deshacer ---------- */
+let TOAST = null;
+function showUndo(text, undo){
+  if (TOAST) clearTimeout(TOAST.t);
+  TOAST = { text, undo, t: setTimeout(() => { TOAST = null; renderToast(); }, 8000) };
+  renderToast();
+}
+function renderToast(){
+  const el = $('#toast');
+  if (!TOAST || !inApp()){ el.hidden = true; el.innerHTML = ''; return; }
+  el.hidden = false;
+  el.innerHTML = `<span>${esc(TOAST.text)}</span><button data-act="undo">Deshacer</button>`;
 }
 
 /* ---------- cálculos ---------- */
@@ -605,11 +636,11 @@ function dayEntries(date){
       const w = weeklyState(r, date);
       extra = `<span class="chip">${w.count}/${w.n} esta semana</span>` + (w.mustToday ? `<span class="chip">toca hoy</span>` : '');
     }
-    out.push({ key:r.id, name:r.name, minutes:+r.minutes||0, time:r.time||'', timer:!!r.timer, done:!!st.done, doneAt:st.doneAt||0, spent:st.spentSec||0, color: g ? g.color : TASK_COLOR, label: g ? g.name : '', extra, order: r.order||0, rid:r.id });
+    out.push({ key:r.id, kind:'r', name:r.name, minutes:+r.minutes||0, time:r.time||'', timer:!!r.timer, done:!!st.done, doneAt:st.doneAt||0, spent:st.spentSec||0, color: g ? g.color : TASK_COLOR, label: g ? g.name : '', gid: r.groupId || '', extra, order: +r.order||0, rid:r.id });
   }
   (doc.tasks||[]).forEach((t, i) => {
     const g = t.groupId ? S.groups[t.groupId] : null;
-    out.push({ key:'t:'+t.id, name:t.text, minutes:+t.minutes||0, time:t.time||'', timer: !!(+t.minutes) && t.timer !== false, done:!!t.done, doneAt:t.doneAt||0, spent:t.spentSec||0, color: g ? g.color : TASK_COLOR, label: g ? g.name : 'Tarea', extra:'', order: 10000 + i });
+    out.push({ key:'t:'+t.id, kind:'t', name:t.text, minutes:+t.minutes||0, time:t.time||'', timer: !!(+t.minutes) && t.timer !== false, done:!!t.done, doneAt:t.doneAt||0, spent:t.spentSec||0, color: g ? g.color : TASK_COLOR, label: g ? g.name : 'Tarea', gid: g ? t.groupId : '', extra:'', order: t.order != null ? +t.order : 10000 + i });
   });
   const timed = out.filter(e => e.time).sort((a,b) => dayPos(a.time) - dayPos(b.time) || a.order - b.order);
   const open = out.filter(e => !e.time && !e.done).sort((a,b) => a.order - b.order);
@@ -669,10 +700,10 @@ function renderHoy(){
     return h;
   }
   const notesFor = rid => visNotes.filter(n => n.rid === rid);
-  const row = (e, timedRow) => {
+  const row = (e, timedRow, scope) => {
     const running = RUN && RUN.date === date && RUN.key === e.key;
     const end = e.time && e.minutes ? fromMin(toMin(e.time) + e.minutes) : '';
-    return `<li class="tl-row ${timedRow ? '' : 'untimed'} ${e.done ? 'done' : ''}" style="${rc(e.color)}">
+    return `<li class="tl-row ${timedRow ? '' : 'untimed'} ${e.done ? 'done' : ''}" style="${rc(e.color)}"${scope != null ? ` data-drag="1" data-key="${esc(e.key)}" data-scope="${esc(scope)}"` : ''}>
       <div class="tl-time">${timedRow ? `${esc(e.time)}${end ? `<small>${end}</small>` : ''}` : ''}</div><span class="tl-node"></span>
       <div class="tl-stack">${cardHtml(e, running, date)}${e.rid ? notesFor(e.rid).map(n => noteHtml(n, true)).join('') : ''}</div></li>`;
   };
@@ -686,14 +717,31 @@ function renderHoy(){
   }
   if (!nowPlaced) h += nowRow();
   if (open.length){
-    if (timed.length) h += `<li class="tl-sep"><span></span><span class="tl-node"></span><span>Sin hora</span></li>`;
-    for (const e of open) h += row(e, false);
+    const grouped = S.settings.groupUntimed !== false;
+    h += `<li class="tl-sep"><span></span><span class="tl-node"></span><div class="sepline"><b>${timed.length ? 'Sin hora' : 'Para hoy'}</b><button data-act="toggleGroupUntimed">${grouped ? 'Ver todo junto' : 'Agrupar por grupo'}</button></div></li>`;
+    if (grouped){
+      for (const c of clusterize(open)){
+        if (c.gid || c.items.length){
+          const g = c.gid ? S.groups[c.gid] : null;
+          h += `<li class="tl-group" style="${rc(g ? g.color : TASK_COLOR)}"><span></span><span class="tl-node"></span><span class="gname">${esc(g ? g.name : 'Tareas')} <small>${c.items.length}</small></span></li>`;
+        }
+        for (const e of c.items) h += row({ ...e, hideLabel:true }, false, c.gid || '_');
+      }
+    } else for (const e of open) h += row(e, false, 'all');
   }
   if (closed.length){
     if (open.length || timed.length) h += `<li class="tl-sep"><span></span><span class="tl-node"></span><span>Hechas</span></li>`;
     for (const e of closed) h += row(e, false);
   }
   return h + `</ol>`;
+}
+/* Agrupa las tareas sin hora por grupo, en el orden de los grupos; las tareas sueltas al final */
+function clusterize(items){
+  const by = new Map();
+  for (const e of items){ const k = e.gid && S.groups[e.gid] ? e.gid : ''; if (!by.has(k)) by.set(k, []); by.get(k).push(e); }
+  const order = groupList(true).map(g => g.id).filter(id => by.has(id));
+  if (by.has('')) order.push('');
+  return order.map(gid => ({ gid, items: by.get(gid).sort((a,b) => a.order - b.order) }));
 }
 function noteHtml(n, mini){
   const r = n.rid ? S.routines[n.rid] : null, g = n.groupId ? S.groups[n.groupId] : (r ? groupOf(r) : null);
@@ -709,9 +757,8 @@ function cardHtml(e, running, date){
   return `<article class="tcard ${e.done ? 'done' : ''} ${running ? 'running' : ''}">
     <button class="check" data-act="toggle" data-key="${e.key}" aria-pressed="${e.done}" aria-label="${e.done ? 'Desmarcar' : 'Tachar'} ${esc(e.name)}">${ICON.check}</button>
     <div class="body"><button class="name" data-act="openItem" data-key="${e.key}"><span class="strike">${esc(e.name)}</span></button>
-      <div class="meta">${e.minutes ? `<span class="num">${fmtMin(e.minutes)}</span>` : ''}${e.timer ? `<span>${ICON.bell}alarma</span>` : ''}${e.extra}${spent}</div></div>
+      <div class="meta">${e.minutes ? `<span class="num">${fmtMin(e.minutes)}</span>` : ''}${e.timer ? `<span>${ICON.bell}alarma</span>` : ''}${e.extra}${spent}${e.label && !e.hideLabel ? `<span class="grp">${esc(e.label)}</span>` : ''}</div></div>
     <button class="play" data-act="run" data-key="${e.key}" aria-label="${running ? 'Pausar' : (e.timer ? 'Empezar temporizador' : 'Cronometrar')}">${running ? ICON.pause : ICON.play}</button>
-    ${e.label ? `<span class="grp">${esc(e.label)}</span>` : ''}
   </article>`;
 }
 
@@ -732,8 +779,8 @@ function renderRutinas(){
   if (ended.length){
     h += `<section class="card"><div class="card-head"><h2>Rutinas eliminadas</h2><button class="linkbtn" data-act="toggleArchived">${UI.showArchived ? 'Ocultar' : `Ver (${ended.length})`}</button></div>`;
     if (UI.showArchived){
-      h += `<p class="hint">Ya no aparecen en tu día, pero lo que hiciste sigue contando en Progreso.</p><div class="archived">`;
-      for (const r of ended){ const g = groupOf(r); h += `<div class="arow" style="${rc(g?.color ?? TASK_COLOR)}"><span class="dot"></span><span><b>${esc(r.name)}</b> <span class="prog">· ${esc(g?.name || '')} · hasta el ${esc(dateLabel(r.endedAt,{day:'numeric', month:'short'}))}</span></span><button class="linkbtn" data-act="restore" data-rid="${r.id}">Recuperar</button></div>`; }
+      h += `<p class="hint">Ya no aparecen en tu día, pero lo que hiciste sigue contando en Progreso. «Borrar» la quita para siempre, también de Progreso.</p><div class="archived">`;
+      for (const r of ended){ const g = groupOf(r); h += `<div class="arow" style="${rc(g?.color ?? TASK_COLOR)}"><span class="dot"></span><span><b>${esc(r.name)}</b> <span class="prog">· ${esc(g?.name || '')} · hasta el ${esc(dateLabel(r.endedAt,{day:'numeric', month:'short'}))}</span></span><button class="linkbtn" data-act="restore" data-rid="${r.id}">Recuperar</button><button class="linkbtn" data-act="purge" data-rid="${r.id}" style="color:var(--warn)">${UI.confirmPurge === r.id ? '¿Seguro? Toca otra vez' : 'Borrar'}</button></div>`; }
       h += `</div>`;
     }
     h += `</section>`;
@@ -827,7 +874,7 @@ function render(){
   if (spentVal !== undefined && $('#spent-input')) $('#spent-input').value = spentVal;
   if (focusId){ const n = document.getElementById(focusId); if (n){ n.focus({preventScroll:true}); try { sel && n.setSelectionRange(sel[0], sel[1]); } catch {} } }
   document.querySelectorAll('nav.tabs button').forEach(b => { if (b.dataset.tab === UI.tab) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
-  renderRunbar();
+  renderRunbar(); renderToast();
 }
 
 /* ---------- hojas emergentes ---------- */
@@ -863,7 +910,8 @@ function renderSheet(){
       <label class="field">Nombre del grupo<input id="ed-name" data-f="name" value="${esc(d.name)}" placeholder="Inglés, Deporte, Modelado 3D…"></label>
       <div class="field">Color del grupo (sus rutinas se verán así)${swatches(d.color)}</div>
       ${d._new ? '<p class="hint">Después de guardarlo podrás añadirle sus rutinas.</p>' : ''}
-      <div class="sheet-actions">${d._new ? '<span></span>' : `<button class="btn ${UI.confirmDel ? 'danger' : 'ghost'}" data-act="delGroup">${UI.confirmDel ? `Toca otra vez: se quitan sus ${nr} rutinas` : 'Eliminar grupo'}</button>`}<button class="btn" data-act="saveGroup">Guardar</button></div>`;
+      ${UI.confirmDel ? `<div class="alert">${ICON.warn}<div>Vas a eliminar el grupo <b>${esc(d.name)}</b> entero${nr ? ` con sus ${nr} rutinas: <b>${esc(routinesOf(d.id).map(r => r.name).join(', '))}</b>` : ''}. Para quitar solo una rutina, ábrela y pulsa «Eliminar rutina».</div></div>` : ''}
+      <div class="sheet-actions">${d._new ? '<span></span>' : `<button class="btn ${UI.confirmDel ? 'danger' : 'ghost'}" data-act="delGroup">${UI.confirmDel ? 'Sí, eliminar el grupo entero' : 'Eliminar grupo entero'}</button>`}<button class="btn" data-act="saveGroup">${UI.confirmDel ? 'Cancelar' : 'Guardar'}</button></div>`;
   } else if (UI.sheet === 'routine'){
     const g = S.groups[d.groupId]; color = g ? g.color : TASK_COLOR;
     const weekly = d.freq.type === 'week';
@@ -928,8 +976,72 @@ document.addEventListener('keydown', e => {
 });
 document.addEventListener('submit', e => { if (e.target.id === 'authform'){ e.preventDefault(); authAction('in'); } });
 
+/* ---------- ordenar arrastrando ---------- */
+let DRAG = null, suppressClickUntil = 0, pressTimer = null, pressInfo = null;
+function nextOrder(date){
+  const { timed, open, closed } = dayEntries(date);
+  return Math.max(0, ...[...timed, ...open, ...closed].map(e => +e.order || 0)) + 1;
+}
+function clearPress(){ clearTimeout(pressTimer); pressTimer = null; pressInfo = null; }
+document.addEventListener('pointerdown', e => {
+  if (DRAG || e.button > 0) return;
+  const li = e.target.closest('li[data-drag]');
+  if (!li || e.target.closest('.check, .play, .spent, .spent-edit, input, select, textarea')) return;
+  pressInfo = { li, x: e.clientX, y: e.clientY, id: e.pointerId };
+  pressTimer = setTimeout(() => { if (pressInfo) beginDrag(pressInfo.li, pressInfo.y); }, e.pointerType === 'mouse' ? 180 : 380);
+});
+function beginDrag(li, y){
+  const ol = li.parentNode, r = li.getBoundingClientRect();
+  DRAG = { li, ol, scope: li.dataset.scope, grab: y - r.top, y };
+  pressTimer = null;
+  li.classList.add('dragging'); document.body.classList.add('drag-active');
+  try { navigator.vibrate && navigator.vibrate(12); } catch {}
+}
+function dragMove(y){
+  const { li, ol, scope } = DRAG; DRAG.y = y;
+  const olTop = ol.getBoundingClientRect().top;
+  const top = y - olTop - DRAG.grab, h = li.offsetHeight;
+  const rows = [...ol.querySelectorAll(`li[data-drag][data-scope="${CSS.escape(scope)}"]`)];
+  const idx = rows.indexOf(li);
+  for (let i = 0; i < idx; i++){ const r = rows[i]; if (top < r.offsetTop + r.offsetHeight / 2){ ol.insertBefore(li, r); break; } }
+  const rows2 = [...ol.querySelectorAll(`li[data-drag][data-scope="${CSS.escape(scope)}"]`)], idx2 = rows2.indexOf(li);
+  for (let i = rows2.length - 1; i > idx2; i--){ const r = rows2[i]; if (top + h > r.offsetTop + r.offsetHeight / 2){ r.after(li); break; } }
+  li.style.transform = `translateY(${top - li.offsetTop}px)`;
+  if (y < 90) window.scrollBy(0, -10); else if (y > innerHeight - 170) window.scrollBy(0, 10);
+}
+document.addEventListener('pointermove', e => {
+  if (DRAG){ e.preventDefault(); dragMove(e.clientY); return; }
+  if (pressInfo && Math.hypot(e.clientX - pressInfo.x, e.clientY - pressInfo.y) > 8) clearPress();
+}, { passive:false });
+document.addEventListener('touchmove', e => { if (DRAG) e.preventDefault(); }, { passive:false });
+document.addEventListener('contextmenu', e => { if (DRAG || pressInfo) e.preventDefault(); });
+function endDrag(){
+  if (!DRAG){ clearPress(); return; }
+  const { li, ol, scope } = DRAG;
+  const keys = [...ol.querySelectorAll(`li[data-drag][data-scope="${CSS.escape(scope)}"]`)].map(r => r.dataset.key);
+  li.classList.remove('dragging'); li.style.transform = ''; document.body.classList.remove('drag-active');
+  DRAG = null; clearPress(); suppressClickUntil = Date.now() + 300;
+  applyOrder(keys); render();
+}
+document.addEventListener('pointerup', endDrag);
+document.addEventListener('pointercancel', endDrag);
+function applyOrder(keys){
+  const date = UI.date, { open } = dayEntries(date), cur = new Map(open.map(e => [e.key, +e.order || 0]));
+  const vals = keys.map(k => cur.get(k) ?? 0).sort((a,b) => a - b);
+  for (let i = 1; i < vals.length; i++) if (vals[i] <= vals[i-1]) vals[i] = vals[i-1] + 0.001;
+  const doc = dayDoc(date); doc.tasks ||= []; doc.items ||= {}; let tasksChanged = false;
+  keys.forEach((k, i) => {
+    const v = Math.round(vals[i] * 1000) / 1000;
+    if (cur.get(k) === v) return;
+    if (k.startsWith('t:')){ const t = doc.tasks.find(t => 't:'+t.id === k); if (t){ t.order = v; tasksChanged = true; } }
+    else if (S.routines[k]){ const r = clone(S.routines[k]); r.order = v; saveRoutine(r); }
+  });
+  if (tasksChanged) saveDay(date, doc);
+}
+
 /* ---------- acciones ---------- */
 document.addEventListener('click', e => {
+  if (Date.now() < suppressClickUntil){ e.preventDefault(); e.stopPropagation(); return; }
   const b = e.target.closest('[data-act]');
   if (!b){ if (e.target.id === 'sheet') closeSheet(); return; }
   e.preventDefault();
@@ -943,7 +1055,7 @@ function act(a, b){
     case 'signout': stopListening(); firebase.auth().signOut(); break;
     case 'tryLocal': lsSet('rutinas-try-local', true); startLocal(); break;
     case 'leaveLocal': lsSet('rutinas-try-local', false); location.reload(); break;
-    case 'tab': UI.tab = b.dataset.tab; UI.editSpent = null; render(); window.scrollTo(0,0); break;
+    case 'tab': UI.tab = b.dataset.tab; UI.editSpent = null; UI.confirmPurge = null; render(); window.scrollTo(0,0); break;
     case 'prevDay': UI.date = addDays(UI.date,-1); UI.editSpent = null; render(); break;
     case 'nextDay': UI.date = addDays(UI.date, 1); UI.editSpent = null; render(); break;
     case 'goToday': UI.date = today(); render(); break;
@@ -969,10 +1081,20 @@ function act(a, b){
     case 'saveSpent': { const v = Math.max(0, +($('#spent-input')?.value) || 0); UI.editSpent = null; setEntry(UI.date, key, x => { x.spentSec = Math.round(v*60); }); render(); break; }
     case 'carry': {
       const from = b.dataset.from, src = dayDoc(from), dst = dayDoc(today()); dst.tasks ||= []; dst.items ||= {};
-      for (const t of (src.tasks||[])) if (!t.done && !t.carried){ t.carried = true; dst.tasks.push({ id: uid(), text: t.text, minutes: t.minutes||0, time: t.time||'', timer: t.timer !== false, groupId: t.groupId||'', done:false, spentSec:0 }); }
+      let o = nextOrder(today());
+      for (const t of (src.tasks||[])) if (!t.done && !t.carried){ t.carried = true; dst.tasks.push({ id: uid(), text: t.text, minutes: t.minutes||0, time: t.time||'', timer: t.timer !== false, groupId: t.groupId||'', done:false, spentSec:0, order: o++ }); }
       saveDay(from, src); saveDay(today(), dst); render(); break;
     }
-    case 'delNote': deleteNote(b.dataset.nid); render(); break;
+    case 'delNote': { const n = clone(S.notes[b.dataset.nid]); deleteNote(b.dataset.nid); render(); if (n) showUndo('Nota quitada', () => saveNote(n)); break; }
+    case 'undo': if (TOAST){ const u = TOAST.undo; clearTimeout(TOAST.t); TOAST = null; renderToast(); u(); render(); } break;
+    case 'toggleGroupUntimed': S.settings.groupUntimed = S.settings.groupUntimed === false; saveSettings(); render(); break;
+    case 'purge': {
+      const rid = b.dataset.rid;
+      if (UI.confirmPurge !== rid){ UI.confirmPurge = rid; render(); break; }
+      UI.confirmPurge = null; removeRoutineDoc(rid);
+      for (const n of Object.values(S.notes)) if (n.rid === rid) deleteNote(n.id);
+      render(); break;
+    }
     case 'newGroup': openGroup(null); break;
     case 'editGroup': openGroup(b.dataset.gid); break;
     case 'newRoutine': openRoutine(null, b.dataset.gid); break;
@@ -989,6 +1111,7 @@ function act(a, b){
     case 'freqN': UI.draft.freq.n = Math.min(7, Math.max(1, (+UI.draft.freq.n || 1) + +b.dataset.d)); renderSheet(); break;
     case 'dayToggle': { const d = +b.dataset.d, ds = UI.draft.freq.days; UI.draft.freq.days = ds.includes(d) ? ds.filter(x => x !== d) : [...ds, d]; renderSheet(); break; }
     case 'saveGroup': {
+      if (UI.confirmDel){ UI.confirmDel = false; renderSheet(); break; }
       const d = UI.draft; d.name = (d.name||'').trim();
       if (!d.name){ const n = $('#ed-name'); n.focus(); n.placeholder = 'Ponle un nombre'; break; }
       const isNew = d._new; saveGroup(d); closeSheet(); render();
@@ -997,10 +1120,12 @@ function act(a, b){
     }
     case 'delGroup': {
       if (!UI.confirmDel){ UI.confirmDel = true; renderSheet(); break; }
-      const g = S.groups[UI.draft.id];
+      const g = S.groups[UI.draft.id], prevG = clone(g), prevR = routinesOf(g.id).map(clone);
       for (const r of routinesOf(g.id)) endRoutine(r);
       const ng = clone(g); ng.endedAt = today(); saveGroup(ng);
-      closeSheet(); render(); break;
+      closeSheet(); render();
+      showUndo(`Grupo «${g.name}» eliminado`, () => { saveGroup(prevG); prevR.forEach(saveRoutine); });
+      break;
     }
     case 'saveRoutine': {
       const d = UI.draft; d.name = (d.name||'').trim();
@@ -1013,25 +1138,32 @@ function act(a, b){
     }
     case 'delRoutine': {
       if (!UI.confirmDel){ UI.confirmDel = true; renderSheet(); break; }
-      const r = S.routines[UI.draft.id];
+      const r = S.routines[UI.draft.id], prev = clone(r);
       if (RUN && RUN.key === r.id){ RUN = null; lsSet('rutinas-run', null); keepAwake(false); }
-      endRoutine(r); closeSheet(); render(); break;
+      endRoutine(r); closeSheet(); render();
+      showUndo(`Rutina «${r.name}» eliminada`, () => saveRoutine(prev));
+      break;
     }
     case 'saveTask': {
       const d = UI.draft, text = (d.text||'').trim();
       if (!text){ const n = $('#ed-name'); n.focus(); n.placeholder = 'Escribe la tarea'; break; }
       const task = { id: d.id, text, minutes: Math.min(600, Math.max(0, +d.minutes || 0)), time: d.time || '', timer: d.timer !== false, groupId: d.groupId || '', done: !!d.done, spentSec: d.spentSec || 0, doneAt: d.doneAt || null };
       if (d.carried) task.carried = true;
+      if (d.order != null) task.order = d.order;
       const doc = dayDoc(UI.date); doc.tasks ||= []; doc.items ||= {};
       const i = doc.tasks.findIndex(t => t.id === d.id);
+      if (i < 0) task.order = nextOrder(UI.date);
       if (i >= 0) doc.tasks[i] = task; else doc.tasks.push(task);
       saveDay(UI.date, doc); closeSheet(); render(); break;
     }
     case 'delTask': {
       if (!UI.confirmDel){ UI.confirmDel = true; renderSheet(); break; }
-      const k = UI.draft._key;
-      if (RUN && RUN.key === k && RUN.date === UI.date){ RUN = null; lsSet('rutinas-run', null); keepAwake(false); }
-      const doc = dayDoc(UI.date); doc.tasks = (doc.tasks||[]).filter(t => 't:'+t.id !== k); saveDay(UI.date, doc); closeSheet(); render(); break;
+      const k = UI.draft._key, date = UI.date;
+      if (RUN && RUN.key === k && RUN.date === date){ RUN = null; lsSet('rutinas-run', null); keepAwake(false); }
+      const doc = dayDoc(date), idx = (doc.tasks||[]).findIndex(t => 't:'+t.id === k), removed = idx >= 0 ? doc.tasks[idx] : null;
+      doc.tasks = (doc.tasks||[]).filter(t => 't:'+t.id !== k); saveDay(date, doc); closeSheet(); render();
+      if (removed) showUndo(`Tarea «${removed.text}» borrada`, () => { const d2 = dayDoc(date); d2.tasks ||= []; d2.items ||= {}; d2.tasks.splice(Math.min(idx, d2.tasks.length), 0, removed); saveDay(date, d2); });
+      break;
     }
     case 'saveNote': {
       const d = UI.draft, text = (d.text||'').trim();
