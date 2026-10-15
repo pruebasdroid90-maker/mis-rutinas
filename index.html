@@ -176,6 +176,18 @@ body.drag-active{-webkit-user-select:none;user-select:none;cursor:grabbing}
 #toast span{flex:1;min-width:0}
 #toast button{font-weight:750;color:var(--accent);padding:6px 4px;filter:brightness(1.35)}
 body.running #toast{bottom:calc(64px + var(--sab) + 98px)}
+.btn.sm{padding:7px 11px;font-size:13.5px;border-radius:9px}
+.daybox{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px}
+.daybox>b{font-size:14px}
+.daybox .lbl{font-size:12.5px;color:var(--muted);font-weight:600}
+.timerow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.timerow input{padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:16px;min-width:0}
+.moverow{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.moverow input{padding:7px 8px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:15px;min-width:0;max-width:160px}
+.notebox2 textarea{width:100%;min-height:96px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:15.5px;resize:vertical;line-height:1.45}
+.links{display:flex;flex-direction:column;gap:4px}
+.links a{color:var(--accent);font-weight:600;font-size:13.5px;overflow-wrap:anywhere}
+.saved{font-size:12px;color:var(--ok);font-weight:600;min-height:16px}
 .carry{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--accent-soft);border-radius:10px;padding:6px 10px;font-size:13.5px}
 
 /* Botón + */
@@ -331,10 +343,11 @@ const ICON = {
   right:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>',
   chev:'<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>',
   bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 21h4"/></svg>',
+  note:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14v11l-5 5H5z"/><path d="M14 20v-5h5M8.5 9h7M8.5 12.5h4"/></svg>',
   warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9.5 17h-19z"/><path d="M12 10v4.5M12 17.5v.1"/></svg>',
 };
 
-const APP_VERSION = '1.4';
+const APP_VERSION = '1.5';
 /* ---------- estado ---------- */
 // mode: loading | setup | login | local | cloud
 const S = { groups:{}, routines:{}, notes:{}, settings:{ wake:'07:30', sleepHours:8 }, days:{}, mode:'loading', got:{}, err:'', user:null };
@@ -371,10 +384,23 @@ const dayPos = t => { let m = toMin(t); if (m === null) return null; if (m < wak
 
 /* Rutinas visibles un día: las que tocan + las ya hechas ese día; las semanales con el objetivo cumplido se ocultan */
 const skippedOn = (rid, date) => !!S.days[date]?.items?.[rid]?.skipped;
+const addedOn = (rid, date) => !!S.days[date]?.items?.[rid]?.added;
+/* Hora de una rutina un día concreto: la de ese día si se cambió, si no la predefinida */
+function effTime(r, date){
+  const it = S.days[date]?.items?.[r.id];
+  return it && typeof it.time === 'string' ? it.time : (r.time || '');
+}
+const shortDay = d => dateLabel(d, { weekday:'short', day:'numeric' });
+function linkify(text){
+  const out = [], re = /\b((?:https?:\/\/|www\.)[^\s<>"]+)/gi; let m;
+  while ((m = re.exec(text || ''))){ const raw = m[1].replace(/[).,;:!?]+$/, ''); out.push(raw.startsWith('http') ? raw : 'https://' + raw); }
+  return [...new Set(out)];
+}
 function dayRoutines(date){
   return allRoutines().filter(r => {
     if (doneOn(r.id, date)) return true;
     if (skippedOn(r.id, date)) return false;
+    if (addedOn(r.id, date)) return !r.endedAt || date < r.endedAt;
     if (!scheduledOn(r, date)) return false;
     if (isWeekly(r) && weeklyState(r, date).met) return false;
     return true;
@@ -430,7 +456,7 @@ function budget(date){
     const m = +r.minutes || 0, done = doneOn(r.id, date);
     if (isWeekly(r) && !done){ const w = weeklyState(r, date); if (!w.mustToday){ flex += m; continue; } }
     total += m; if (done) doneMin += m; else pend += m;
-    if (r.time) sched.push({ name:r.name, start:dayPos(r.time), min:m });
+    const tm = effTime(r, date); if (tm) sched.push({ name:r.name, start:dayPos(tm), min:m });
   }
   for (const t of (doc.tasks||[])){
     const m = +t.minutes || 0; total += m; if (t.done) doneMin += m; else pend += m;
@@ -498,7 +524,7 @@ function routineStats(r, from, to){
   }
   for (let d = from; d <= end; d = addDays(d, 1)){
     const dn = doneOn(r.id, d);
-    if (!isWeekly(r)){ if ((scheduledOn(r, d) && !skippedOn(r.id, d)) || dn) planned++; if (dn) done++; }
+    if (!isWeekly(r)){ if ((scheduledOn(r, d) && !skippedOn(r.id, d)) || addedOn(r.id, d) || dn) planned++; if (dn) done++; }
     if (dn) times++;
     spent += S.days[d]?.items?.[r.id]?.spentSec || 0;
   }
@@ -517,7 +543,7 @@ function statsFor(from, to){
   for (let d = from; d <= to; d = addDays(d,1)){
     if (d > t){ daily.push({ d, pct:null }); continue; }
     let dp = 0, dd = 0;
-    for (const r of allRoutines()){ const dn = doneOn(r.id, d); if ((scheduledOn(r, d) && !isWeekly(r) && !skippedOn(r.id, d)) || dn) dp++; if (dn) dd++; }
+    for (const r of allRoutines()){ const dn = doneOn(r.id, d); if ((scheduledOn(r, d) && !isWeekly(r) && !skippedOn(r.id, d)) || (addedOn(r.id, d) && !skippedOn(r.id, d)) || dn) dp++; if (dn) dd++; }
     for (const tk of (S.days[d]?.tasks || [])){ tTot++; if (tk.done) tDone++; spent += tk.spentSec || 0; }
     daily.push({ d, pct: dp ? dd/dp : null, dp, dd });
   }
@@ -645,11 +671,14 @@ function dayEntries(date){
       const w = weeklyState(r, date);
       extra = `<span class="chip">${w.count}/${w.n} sem.</span>` + (w.mustToday ? `<span class="chip">toca hoy</span>` : '');
     }
-    out.push({ key:r.id, kind:'r', name:r.name, minutes:+r.minutes||0, time:r.time||'', timer:!!r.timer, done:!!st.done, doneAt:st.doneAt||0, spent:st.spentSec||0, color: g ? g.color : TASK_COLOR, label: g ? g.name : '', gid: r.groupId || '', extra, order: +r.order||0, rid:r.id });
+    if (st.movedFrom && !st.done) extra += `<span class="chip">de ${esc(shortDay(st.movedFrom))}</span>`;
+    if ((r.notes || '').trim()) extra = `<span title="Tiene notas">${ICON.note}</span>` + extra;
+    out.push({ key:r.id, kind:'r', name:r.name, minutes:+r.minutes||0, time:effTime(r, date), timer:!!r.timer, done:!!st.done, doneAt:st.doneAt||0, spent:st.spentSec||0, color: g ? g.color : TASK_COLOR, label: g ? g.name : '', gid: r.groupId || '', extra, order: +r.order||0, rid:r.id });
   }
   (doc.tasks||[]).forEach((t, i) => {
     const g = t.groupId ? S.groups[t.groupId] : null;
-    out.push({ key:'t:'+t.id, kind:'t', name:t.text, minutes:+t.minutes||0, time:t.time||'', timer: !!(+t.minutes) && t.timer !== false, done:!!t.done, doneAt:t.doneAt||0, spent:t.spentSec||0, color: g ? g.color : TASK_COLOR, label: g ? g.name : 'Tarea', gid: g ? t.groupId : '', extra:'', order: t.order != null ? +t.order : 10000 + i });
+    const textra = ((t.note || '').trim() ? `<span title="Tiene notas">${ICON.note}</span>` : '') + (t.movedFrom && !t.done ? `<span class="chip">de ${esc(shortDay(t.movedFrom))}</span>` : '');
+    out.push({ key:'t:'+t.id, kind:'t', name:t.text, minutes:+t.minutes||0, time:t.time||'', timer: !!(+t.minutes) && t.timer !== false, done:!!t.done, doneAt:t.doneAt||0, spent:t.spentSec||0, color: g ? g.color : TASK_COLOR, label: g ? g.name : 'Tarea', gid: g ? t.groupId : '', extra:textra, order: t.order != null ? +t.order : 10000 + i });
   });
   const timed = out.filter(e => e.time).sort((a,b) => dayPos(a.time) - dayPos(b.time) || a.order - b.order);
   const open = out.filter(e => !e.time && !e.done).sort((a,b) => a.order - b.order);
@@ -749,7 +778,7 @@ function renderHoy(){
 function skippedHtml(date){
   const sk = allRoutines().filter(r => skippedOn(r.id, date) && !doneOn(r.id, date));
   if (!sk.length) return '';
-  return `<p class="hint">Quitadas solo de este día: ${sk.map(r => `<button class="linkbtn" data-act="unskip" data-rid="${r.id}" style="padding:2px 4px">${esc(r.name)} ↺</button>`).join(' ')}</p>`;
+  return `<p class="hint">Quitadas de este día: ${sk.map(r => { const to = S.days[date]?.items?.[r.id]?.movedTo; return `<button class="linkbtn" data-act="unskip" data-rid="${r.id}" style="padding:2px 4px" aria-label="Volver a poner ${esc(r.name)} este día">${esc(r.name)}${to ? ` → ${esc(shortDay(to))}` : ''} ↺</button>`; }).join(' ')}</p>`;
 }
 /* Agrupa las tareas sin hora por grupo, en el orden de los grupos; las tareas sueltas al final */
 function clusterize(items){
@@ -788,7 +817,7 @@ function renderRutinas(){
     h += `<section class="gcard" style="${rc(g.color)}"><div class="ghead"><h2>${esc(g.name)}</h2><button data-act="editGroup" data-gid="${g.id}">Editar</button></div><div class="gbody">`;
     if (!rs.length) h += `<p class="hint" style="padding:10px 0">Este grupo no tiene rutinas todavía.</p>`;
     for (const r of rs) h += `<button class="gr" data-act="editRoutine" data-rid="${r.id}"><span class="sw"></span><span class="rmain"><b>${esc(r.name)}</b>
-        <span class="rmeta"><span class="num">${fmtMin(+r.minutes||0)}</span>${r.time ? `<span class="num">${esc(r.time)}</span>` : '<span>sin hora</span>'}<span>${esc(freqLabel(r))}</span>${r.timer ? `<span>${ICON.bell} alarma</span>` : ''}</span></span>${ICON.chev}</button>`;
+        <span class="rmeta"><span class="num">${fmtMin(+r.minutes||0)}</span>${r.time ? `<span class="num">${esc(r.time)}</span>` : '<span>sin hora</span>'}${(r.notes || '').trim() ? `<span title="Tiene notas">${ICON.note}</span>` : ''}<span>${esc(freqLabel(r))}</span>${r.timer ? `<span>${ICON.bell} alarma</span>` : ''}</span></span>${ICON.chev}</button>`;
     h += `</div><div class="gfoot"><button class="linkbtn" data-act="newRoutine" data-gid="${g.id}">+ Añadir rutina</button></div></section>`;
   }
   const ended = allRoutines().filter(r => r.endedAt);
@@ -897,7 +926,36 @@ function render(){
 /* ---------- hojas emergentes ---------- */
 const swatches = cur => `<div class="swatches">${Array.from({length:NCOL}, (_, c) => `<button style="${rc(c)}" data-act="color" data-c="${c}" aria-pressed="${(+cur||0)===c}" aria-label="Color ${c+1}"></button>`).join('')}</div>`;
 function openSheet(kind, draft){ UI.sheet = kind; UI.draft = draft; UI.confirmDel = false; renderSheet(); setTimeout(() => { const n = $('#ed-name'); if (n && !n.value) n.focus(); }, 60); }
-function closeSheet(){ UI.sheet = null; UI.draft = null; renderSheet(); }
+function closeSheet(){ flushNote(); UI.sheet = null; UI.draft = null; renderSheet(); }
+/* Notas de rutina: se guardan solas mientras escribes */
+let NOTE_T = null, NOTE_PENDING = null;
+function queueNote(rid, text){
+  NOTE_PENDING = { rid, text }; clearTimeout(NOTE_T); NOTE_T = setTimeout(flushNote, 700);
+  const sv = $('#di-saved'); if (sv) sv.textContent = '';
+}
+function flushNote(){
+  clearTimeout(NOTE_T); NOTE_T = null;
+  if (!NOTE_PENDING) return;
+  const { rid, text } = NOTE_PENDING; NOTE_PENDING = null;
+  const r = S.routines[rid]; if (!r || (r.notes || '') === text) return;
+  const nr = clone(r); nr.notes = text; saveRoutine(nr);
+  const sv = $('#di-saved'); if (sv) sv.textContent = 'Guardado';
+  const lk = $('#di-links'); if (lk) lk.innerHTML = linksHtml(text);
+  if (UI.tab === 'hoy') render();
+}
+const linksHtml = text => linkify(text).map(u => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(u.replace(/^https?:\/\//, '').slice(0, 60))} ↗</a>`).join('');
+function moveRow(kind){
+  const base = UI.date, t = today(), opts = [];
+  if (base > t) opts.push(t);
+  if (base < t) opts.push(t);
+  opts.push(addDays(base > t ? base : t, base >= t ? 1 : 1));
+  opts.push(addDays(opts[opts.length - 1], 1));
+  const uniq = [...new Set(opts)].filter(d => d !== base).slice(0, 3);
+  const lab = d => d === t ? 'Hoy' : d === addDays(t, 1) ? `Mañana · ${shortDay(d)}` : cap(shortDay(d));
+  return `<div class="lbl">Pasar a otro día</div>
+    <div class="moverow">${uniq.map(d => `<button class="btn ghost sm" data-act="${kind}" data-to="${d}">${esc(lab(d))}</button>`).join('')}
+      <input type="date" id="move-date" aria-label="Elegir día" min="${t}"><button class="btn ghost sm" data-act="${kind}" data-to="pick">Mover</button></div>`;
+}
 function openGroup(id){
   openSheet('group', id ? clone(S.groups[id]) : { id:'g-'+uid(), name:'', color: groupList().length % (NCOL-1), createdAt: today(), order: Math.max(0, ...groupList(true).map(g => g.order||0)) + 1, _new:true });
 }
@@ -941,9 +999,11 @@ function renderSheet(){
       <div class="field">Grupo<div class="gchips">${groupList().map(x => `<button style="${rc(x.color)}" data-act="pickGroup" data-gid="${x.id}" aria-pressed="${x.id === d.groupId}">${esc(x.name)}</button>`).join('')}</div></div>
       <div class="settings">
         <label class="field">Minutos<input id="ed-min" data-f="minutes" type="number" min="0" max="600" inputmode="numeric" value="${esc(d.minutes)}"></label>
-        <label class="field">Hora (opcional)<input id="ed-time" data-f="time" type="time" value="${esc(d.time||'')}"></label>
+        <label class="field">Hora predefinida (opcional)<input id="ed-time" data-f="time" type="time" value="${esc(d.time||'')}"></label>
       </div>
+      <p class="hint">Es la hora con la que aparece cada día. Para cambiarla solo un día, toca la rutina en Hoy.</p>
       <label class="toggle"><input id="ed-timer" data-f="timer" type="checkbox" ${d.timer ? 'checked' : ''}> Temporizador con alarma al acabar los minutos</label>
+      <label class="field">Notas (opcional)<textarea id="ed-notes" data-f="notes" placeholder="Qué quieres hacer, un tutorial, enlaces…">${esc(d.notes || '')}</textarea></label>
       <div class="field">Frecuencia
         <div class="seg" role="group" aria-label="Tipo de frecuencia"><button data-act="freqType" data-t="days" aria-pressed="${!weekly}">Días concretos</button><button data-act="freqType" data-t="week" aria-pressed="${weekly}">Veces por semana</button></div>
         ${weekly
@@ -963,22 +1023,33 @@ function renderSheet(){
       </div>
       <label class="toggle"><input id="ed-timer" data-f="timer" type="checkbox" ${d.timer !== false ? 'checked' : ''}> Alarma al acabar los minutos</label>
       <div class="field">Grupo (opcional, le da su color)<div class="gchips"><button style="${rc(TASK_COLOR)}" data-act="pickGroup" data-gid="" aria-pressed="${!d.groupId}">Ninguno</button>${groupList().map(x => `<button style="${rc(x.color)}" data-act="pickGroup" data-gid="${x.id}" aria-pressed="${x.id === d.groupId}">${esc(x.name)}</button>`).join('')}</div></div>
+      <label class="field">Notas (opcional)<textarea id="ed-notes" data-f="note" placeholder="Detalles, un enlace…">${esc(d.note || '')}</textarea></label>
+      ${(d.note || '').trim() && linkify(d.note).length ? `<div class="links">${linksHtml(d.note)}</div>` : ''}
+      ${d._new || d.done ? '' : `<div class="daybox">${moveRow('moveTask')}<p class="hint">Se guarda lo que hayas cambiado y se quita la hora, para que la pongas ese día si quieres.</p></div>`}
       <div class="sheet-actions">${d._new ? '<span></span>' : `<button class="btn ${UI.confirmDel ? 'danger' : 'ghost'}" data-act="delTask">${UI.confirmDel ? 'Toca otra vez para borrar' : 'Borrar tarea'}</button>`}<button class="btn" data-act="saveTask">${d._new ? 'Añadir tarea' : 'Guardar'}</button></div>`;
   } else if (UI.sheet === 'dayitem'){
     const r = S.routines[d.id], g = groupOf(r); color = g ? g.color : TASK_COLOR;
-    const st = S.days[UI.date]?.items?.[d.id] || {};
+    const st = S.days[UI.date]?.items?.[d.id] || {}, overridden = typeof st.time === 'string', tm = r ? effTime(r, UI.date) : '';
+    const dayName = UI.date === today() ? 'hoy' : 'el ' + dateLabel(UI.date, {weekday:'long', day:'numeric'});
     html = `${head(esc(r?.name || 'Rutina'))}
-      <p class="hint" style="font-size:14px">${esc([g?.name, fmtMin(+r?.minutes||0), r?.time ? 'a las ' + r.time : 'sin hora', freqLabel(r || {})].filter(Boolean).join(' · '))}</p>
-      <div class="card" style="gap:10px">
-        <b>Solo ${UI.date === today() ? 'hoy' : 'el ' + esc(dateLabel(UI.date, {weekday:'long', day:'numeric'}))}</b>
-        <p class="hint">Quita esta rutina de este día sin tocar la rutina: los demás días seguirá apareciendo y no contará como no hecha.</p>
-        <button class="btn ghost" data-act="skipDay" style="align-self:flex-start">${st.done ? 'Desmarcar y quitar de este día' : 'Quitar de este día'}</button>
+      <p class="hint" style="font-size:14px;margin-top:-6px">${esc([g?.name, fmtMin(+r?.minutes||0), freqLabel(r || {})].filter(Boolean).join(' · '))}</p>
+      <div class="daybox">
+        <b>Solo ${esc(dayName)}</b>
+        <div class="lbl">Hora</div>
+        <div class="timerow"><input type="time" id="di-time" value="${esc(tm)}" aria-label="Hora este día">
+          ${tm ? `<button class="btn ghost sm" data-act="dayTime" data-v="">Sin hora</button>` : ''}
+          ${overridden && r?.time && st.time !== r.time ? `<button class="btn ghost sm" data-act="dayTime" data-v="default">Usar ${esc(r.time)}</button>` : ''}</div>
+        <p class="hint">${r?.time ? `Predefinida: ${esc(r.time)}.` : 'Sin hora predefinida.'} Lo que pongas aquí solo cambia ${esc(dayName)}.</p>
+        ${st.done ? '<p class="hint">Ya está hecha este día.</p>' : moveRow('moveRoutine')}
+        <button class="btn ghost sm" data-act="skipDay" style="align-self:flex-start">${st.done ? 'Desmarcar y quitar de este día' : 'Quitar de este día'}</button>
       </div>
-      <div class="card" style="gap:10px">
-        <b>Todos los días</b>
-        <p class="hint">Cambia el nombre, los minutos, la hora o los días de la rutina. Para eliminarla del todo, hazlo desde la pestaña Rutinas.</p>
-        <button class="btn ghost" data-act="editFromDay" style="align-self:flex-start">Editar rutina</button>
-      </div>`;
+      <div class="field notebox2">Notas de la rutina
+        <textarea id="di-note" placeholder="Qué quieres hacer, el tutorial que quieres ver, enlaces…">${esc(r?.notes || '')}</textarea>
+        <div class="links" id="di-links">${linksHtml(r?.notes || '')}</div>
+        <span class="saved" id="di-saved"></span>
+      </div>
+      <p class="hint" style="margin-top:-8px">Las notas se guardan solas en la rutina y las verás cada vez que la abras.</p>
+      <div class="sheet-actions"><span class="hint">Para nombre, minutos, días o eliminarla: pestaña Rutinas.</span><button class="btn ghost" data-act="editFromDay">Editar rutina</button></div>`;
   } else if (UI.sheet === 'note'){
     color = 4;
     const opts = [`<option value="">Nota general</option>`];
@@ -997,6 +1068,7 @@ function renderSheet(){
 }
 document.addEventListener('input', e => {
   const n = e.target; if (!UI.draft || !n.closest('#sheet')) return;
+  if (n.id === 'di-note'){ queueNote(UI.draft.id, n.value); return; }
   const f = n.dataset.f; if (!f) return;
   UI.draft[f] = n.type === 'checkbox' ? n.checked : f === 'minutes' ? (n.value === '' ? '' : +n.value) : n.value;
 });
@@ -1004,8 +1076,15 @@ document.addEventListener('change', e => {
   const n = e.target;
   if (n.id === 'set-wake' && n.value){ S.settings.wake = n.value; saveSettings(); }
   if (n.id === 'set-sleep'){ S.settings.sleepHours = Math.min(12, Math.max(4, +n.value || 8)); saveSettings(); }
+  if (n.id === 'di-time' && UI.draft){ setDayTime(UI.draft.id, n.value); return; }
+  if (n.id === 'di-note' && UI.draft){ queueNote(UI.draft.id, n.value); flushNote(); return; }
   if (UI.draft && n.closest('#sheet') && n.dataset.f) UI.draft[n.dataset.f] = n.type === 'checkbox' ? n.checked : n.value;
 });
+function setDayTime(rid, v){
+  const r = S.routines[rid]; if (!r) return;
+  setEntry(UI.date, rid, x => { if (v === 'default' || (v === (r.time || '') && v)) delete x.time; else x.time = v; });
+  render(); flushNote(); renderSheet();
+}
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && UI.draft) closeSheet();
   if (e.key === 'Enter' && e.target.id === 'ed-name' && e.target.tagName === 'INPUT' && UI.sheet === 'task'){ e.preventDefault(); act('saveTask', e.target); }
@@ -1014,6 +1093,33 @@ document.addEventListener('submit', e => { if (e.target.id === 'authform'){ e.pr
 
 /* ---------- ordenar arrastrando ---------- */
 let DRAG = null, suppressClickUntil = 0, pressTimer = null, pressInfo = null;
+function moveRoutine(rid, from, to){
+  const r = S.routines[rid]; if (!r) return;
+  flushNote();
+  const prevFrom = clone(S.days[from]?.items?.[rid] || null), prevTo = clone(S.days[to]?.items?.[rid] || null);
+  const already = (scheduledOn(r, to) && !skippedOn(rid, to)) || addedOn(rid, to) || doneOn(rid, to);
+  if (RUN && RUN.key === rid && RUN.date === from){ RUN = null; lsSet('rutinas-run', null); keepAwake(false); }
+  setEntry(from, rid, x => { x.skipped = true; x.movedTo = to; x.done = false; x.doneAt = null; delete x.added; delete x.movedFrom; });
+  setEntry(to, rid, x => { delete x.skipped; delete x.movedTo; x.added = true; if (from < to || !x.movedFrom) x.movedFrom = from; });
+  closeSheet(); render();
+  const restore = (date, prev) => { const doc = dayDoc(date); doc.items ||= {}; doc.tasks ||= []; if (prev) doc.items[rid] = prev; else delete doc.items[rid]; saveDay(date, doc); };
+  showUndo(already ? `«${r.name}» ya estaba el ${shortDay(to)}: quitada de este día` : `«${r.name}» pasada al ${shortDay(to)}`, () => { restore(from, prevFrom); restore(to, prevTo); });
+}
+function moveTask(from, to){
+  const d = UI.draft, text = (d.text || '').trim(); if (!text) return;
+  const k = d._key, src = dayDoc(from), idx = (src.tasks || []).findIndex(t => 't:'+t.id === k);
+  if (idx < 0) return;
+  const before = clone(src.tasks[idx]);
+  if (RUN && RUN.key === k && RUN.date === from){ RUN = null; lsSet('rutinas-run', null); keepAwake(false); }
+  src.tasks.splice(idx, 1); saveDay(from, src);
+  const moved = { id: d.id, text, minutes: Math.min(600, Math.max(0, +d.minutes || 0)), time: '', timer: d.timer !== false, groupId: d.groupId || '', note: (d.note || '').replace(/\s+$/, ''), done: false, spentSec: d.spentSec || 0, doneAt: null, movedFrom: before.movedFrom || from, order: nextOrder(to) };
+  const dst = dayDoc(to); dst.tasks ||= []; dst.items ||= {}; dst.tasks.push(moved); saveDay(to, dst);
+  closeSheet(); render();
+  showUndo(`«${text}» pasada al ${shortDay(to)}`, () => {
+    const d2 = dayDoc(to); d2.tasks = (d2.tasks || []).filter(t => t.id !== moved.id); saveDay(to, d2);
+    const s2 = dayDoc(from); s2.tasks ||= []; s2.items ||= {}; s2.tasks.splice(Math.min(idx, s2.tasks.length), 0, before); saveDay(from, s2);
+  });
+}
 function nextOrder(date){
   const { timed, open, closed } = dayEntries(date);
   return Math.max(0, ...[...timed, ...open, ...closed].map(e => +e.order || 0)) + 1;
@@ -1123,13 +1229,26 @@ function act(a, b){
       showUndo(`«${r?.name || 'Rutina'}» quitada de este día`, () => { const doc = dayDoc(date); doc.items ||= {}; doc.tasks ||= []; if (prev) doc.items[rid] = prev; else delete doc.items[rid]; saveDay(date, doc); });
       break;
     }
-    case 'unskip': { const rid = b.dataset.rid; setEntry(UI.date, rid, x => { delete x.skipped; }); render(); break; }
+    case 'unskip': {
+      const rid = b.dataset.rid, to = S.days[UI.date]?.items?.[rid]?.movedTo;
+      setEntry(UI.date, rid, x => { delete x.skipped; delete x.movedTo; });
+      if (to && addedOn(rid, to) && !doneOn(rid, to)) setEntry(to, rid, x => { delete x.added; delete x.movedFrom; });
+      render(); break;
+    }
+    case 'dayTime': setDayTime(UI.draft.id, b.dataset.v); break;
+    case 'moveRoutine': case 'moveTask': {
+      let to = b.dataset.to;
+      if (to === 'pick'){ to = $('#move-date')?.value; if (!to){ $('#move-date')?.focus(); break; } }
+      const from = UI.date; if (!to || to === from) break;
+      if (a === 'moveRoutine') moveRoutine(UI.draft.id, from, to); else moveTask(from, to);
+      break;
+    }
     case 'editSpent': UI.editSpent = key; render(); setTimeout(() => { const n = $('#spent-input'); if (n){ n.focus(); n.select(); } }, 30); break;
     case 'saveSpent': { const v = Math.max(0, +($('#spent-input')?.value) || 0); UI.editSpent = null; setEntry(UI.date, key, x => { x.spentSec = Math.round(v*60); }); render(); break; }
     case 'carry': {
       const from = b.dataset.from, src = dayDoc(from), dst = dayDoc(today()); dst.tasks ||= []; dst.items ||= {};
       let o = nextOrder(today());
-      for (const t of (src.tasks||[])) if (!t.done && !t.carried){ t.carried = true; dst.tasks.push({ id: uid(), text: t.text, minutes: t.minutes||0, time: t.time||'', timer: t.timer !== false, groupId: t.groupId||'', done:false, spentSec:0, order: o++ }); }
+      for (const t of (src.tasks||[])) if (!t.done && !t.carried){ t.carried = true; dst.tasks.push({ id: uid(), text: t.text, minutes: t.minutes||0, time: '', timer: t.timer !== false, groupId: t.groupId||'', note: t.note || '', movedFrom: from, done:false, spentSec:0, order: o++ }); }
       saveDay(from, src); saveDay(today(), dst); render(); break;
     }
     case 'delNote': { const n = clone(S.notes[b.dataset.nid]); deleteNote(b.dataset.nid); render(); if (n) showUndo('Nota quitada', () => saveNote(n)); break; }
@@ -1179,7 +1298,7 @@ function act(a, b){
       const d = UI.draft; d.name = (d.name||'').trim();
       if (!d.name){ const n = $('#ed-name'); n.focus(); n.placeholder = 'Ponle un nombre'; break; }
       if (!d.groupId || !S.groups[d.groupId]) d.groupId = groupList()[0]?.id || '';
-      d.minutes = Math.min(600, Math.max(0, +d.minutes || 0)); d.timer = !!d.timer; d.time = d.time || '';
+      d.minutes = Math.min(600, Math.max(0, +d.minutes || 0)); d.timer = !!d.timer; d.time = d.time || ''; d.notes = (d.notes || '').replace(/\s+$/, '');
       if (d.freq.type === 'days' && !d.freq.days.length) d.freq.days = ALL_DAYS.slice();
       if (d.freq.type === 'week') d.freq = { type:'week', n: Math.min(7, Math.max(1, +d.freq.n || 1)) };
       saveRoutine(d); closeSheet(); render(); break;
@@ -1195,8 +1314,9 @@ function act(a, b){
     case 'saveTask': {
       const d = UI.draft, text = (d.text||'').trim();
       if (!text){ const n = $('#ed-name'); n.focus(); n.placeholder = 'Escribe la tarea'; break; }
-      const task = { id: d.id, text, minutes: Math.min(600, Math.max(0, +d.minutes || 0)), time: d.time || '', timer: d.timer !== false, groupId: d.groupId || '', done: !!d.done, spentSec: d.spentSec || 0, doneAt: d.doneAt || null };
+      const task = { id: d.id, text, minutes: Math.min(600, Math.max(0, +d.minutes || 0)), time: d.time || '', timer: d.timer !== false, groupId: d.groupId || '', note: (d.note || '').replace(/\s+$/, ''), done: !!d.done, spentSec: d.spentSec || 0, doneAt: d.doneAt || null };
       if (d.carried) task.carried = true;
+      if (d.movedFrom) task.movedFrom = d.movedFrom;
       if (d.order != null) task.order = d.order;
       const doc = dayDoc(UI.date); doc.tasks ||= []; doc.items ||= {};
       const i = doc.tasks.findIndex(t => t.id === d.id);
