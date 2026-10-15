@@ -334,7 +334,7 @@ const ICON = {
   warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9.5 17h-19z"/><path d="M12 10v4.5M12 17.5v.1"/></svg>',
 };
 
-const APP_VERSION = '1.3';
+const APP_VERSION = '1.4';
 /* ---------- estado ---------- */
 // mode: loading | setup | login | local | cloud
 const S = { groups:{}, routines:{}, notes:{}, settings:{ wake:'07:30', sleepHours:8 }, days:{}, mode:'loading', got:{}, err:'', user:null };
@@ -370,9 +370,11 @@ const wakeMin = () => toMin(S.settings.wake || '07:30') ?? 450;
 const dayPos = t => { let m = toMin(t); if (m === null) return null; if (m < wakeMin()) m += 1440; return m; };
 
 /* Rutinas visibles un día: las que tocan + las ya hechas ese día; las semanales con el objetivo cumplido se ocultan */
+const skippedOn = (rid, date) => !!S.days[date]?.items?.[rid]?.skipped;
 function dayRoutines(date){
   return allRoutines().filter(r => {
     if (doneOn(r.id, date)) return true;
+    if (skippedOn(r.id, date)) return false;
     if (!scheduledOn(r, date)) return false;
     if (isWeekly(r) && weeklyState(r, date).met) return false;
     return true;
@@ -466,7 +468,7 @@ function streak(r){
   let n = 0, d = t;
   for (let k = 0; k < 400; k++, d = addDays(d,-1)){
     if (r.createdAt && d < r.createdAt) break;
-    if (!scheduledOn(r, d)) continue;
+    if (!scheduledOn(r, d) || (skippedOn(r.id, d) && !doneOn(r.id, d))) continue;
     if (doneOn(r.id, d)) n++; else if (d === t) continue; else break;
   }
   return { n, unit: n === 1 ? 'día' : 'días' };
@@ -496,7 +498,7 @@ function routineStats(r, from, to){
   }
   for (let d = from; d <= end; d = addDays(d, 1)){
     const dn = doneOn(r.id, d);
-    if (!isWeekly(r)){ if (scheduledOn(r, d) || dn) planned++; if (dn) done++; }
+    if (!isWeekly(r)){ if ((scheduledOn(r, d) && !skippedOn(r.id, d)) || dn) planned++; if (dn) done++; }
     if (dn) times++;
     spent += S.days[d]?.items?.[r.id]?.spentSec || 0;
   }
@@ -515,7 +517,7 @@ function statsFor(from, to){
   for (let d = from; d <= to; d = addDays(d,1)){
     if (d > t){ daily.push({ d, pct:null }); continue; }
     let dp = 0, dd = 0;
-    for (const r of allRoutines()){ const dn = doneOn(r.id, d); if ((scheduledOn(r, d) && !isWeekly(r)) || dn) dp++; if (dn) dd++; }
+    for (const r of allRoutines()){ const dn = doneOn(r.id, d); if ((scheduledOn(r, d) && !isWeekly(r) && !skippedOn(r.id, d)) || dn) dp++; if (dn) dd++; }
     for (const tk of (S.days[d]?.tasks || [])){ tTot++; if (tk.done) tDone++; spent += tk.spentSec || 0; }
     daily.push({ d, pct: dp ? dd/dp : null, dp, dd });
   }
@@ -702,7 +704,7 @@ function renderHoy(){
   const { timed, open, closed } = dayEntries(date);
   if (!timed.length && !open.length && !closed.length){
     h += groupList().length
-      ? `<section class="empty"><h2>Día libre</h2><p>Hoy no te toca ninguna rutina. Pulsa + para apuntar una tarea.</p></section>`
+      ? `<section class="empty"><h2>Día libre</h2><p>Hoy no te toca ninguna rutina. Pulsa + para apuntar una tarea.</p></section>` + skippedHtml(date)
       : `<section class="empty"><h2>Empieza por un grupo</h2><p>Crea un grupo como «Inglés» y dentro sus rutinas: gramática, vocabulario… Para cosas sueltas del día, pulsa +.</p><button class="btn" data-act="newGroup">Crear grupo</button></section>`;
     return h;
   }
@@ -742,7 +744,12 @@ function renderHoy(){
     if (open.length || timed.length) h += `<li class="tl-sep"><span></span><span class="tl-node"></span><span>Hechas</span></li>`;
     for (const e of closed) h += row(e, false);
   }
-  return h + `</ol>`;
+  return h + `</ol>` + skippedHtml(date);
+}
+function skippedHtml(date){
+  const sk = allRoutines().filter(r => skippedOn(r.id, date) && !doneOn(r.id, date));
+  if (!sk.length) return '';
+  return `<p class="hint">Quitadas solo de este día: ${sk.map(r => `<button class="linkbtn" data-act="unskip" data-rid="${r.id}" style="padding:2px 4px">${esc(r.name)} ↺</button>`).join(' ')}</p>`;
 }
 /* Agrupa las tareas sin hora por grupo, en el orden de los grupos; las tareas sueltas al final */
 function clusterize(items){
@@ -904,6 +911,10 @@ function openTask(key){
   if (key){ const t = (S.days[UI.date]?.tasks || []).find(t => 't:'+t.id === key); if (!t) return; openSheet('task', { ...clone(t), _key:key }); }
   else openSheet('task', { id: uid(), text:'', minutes:'', time:'', timer:true, groupId:'', done:false, spentSec:0, _new:true });
 }
+function openDayItem(rid){
+  const r = S.routines[rid]; if (!r) return;
+  openSheet('dayitem', { id: rid });
+}
 function openNote(){ openSheet('note', { id:'n-'+uid(), text:'', target:'', when:'tomorrow', _new:true }); }
 
 function renderSheet(){
@@ -940,8 +951,8 @@ function renderSheet(){
              <p class="hint">Aparece cada día hasta que la hagas las veces de la semana. Si se acaba la semana y te faltan, verás «toca hoy».</p>`
           : `<div class="daypick">${DOW_ORDER.map(x => `<button data-act="dayToggle" data-d="${x}" aria-pressed="${d.freq.days.includes(x)}">${DOW[x]}</button>`).join('')}</div>`}
       </div>
-      <div class="sheet-actions">${d._new ? '<span></span>' : `<button class="btn ${UI.confirmDel ? 'danger' : 'ghost'}" data-act="delRoutine">${UI.confirmDel ? 'Toca otra vez para eliminar' : 'Eliminar rutina'}</button>`}<button class="btn" data-act="saveRoutine">Guardar</button></div>
-      ${!d._new ? '<p class="hint">Al eliminarla deja de aparecer desde hoy. Lo que ya hiciste se conserva en Progreso y puedes recuperarla.</p>' : ''}`;
+      <div class="sheet-actions">${d._new || UI.tab !== 'rutinas' ? '<span></span>' : `<button class="btn ${UI.confirmDel ? 'danger' : 'ghost'}" data-act="delRoutine">${UI.confirmDel ? 'Toca otra vez para eliminar' : 'Eliminar rutina'}</button>`}<button class="btn" data-act="saveRoutine">Guardar</button></div>
+      ${d._new ? '' : UI.tab === 'rutinas' ? '<p class="hint">Al eliminarla deja de aparecer desde hoy. Lo que ya hiciste se conserva en Progreso y puedes recuperarla.</p>' : '<p class="hint">Los cambios se aplican a todos los días. Para eliminar la rutina, ve a la pestaña Rutinas.</p>'}`;
   } else if (UI.sheet === 'task'){
     const g = d.groupId ? S.groups[d.groupId] : null; color = g ? g.color : TASK_COLOR;
     html = `${head(d._new ? 'Añadir' : 'Editar tarea')}${kindSeg}
@@ -953,6 +964,21 @@ function renderSheet(){
       <label class="toggle"><input id="ed-timer" data-f="timer" type="checkbox" ${d.timer !== false ? 'checked' : ''}> Alarma al acabar los minutos</label>
       <div class="field">Grupo (opcional, le da su color)<div class="gchips"><button style="${rc(TASK_COLOR)}" data-act="pickGroup" data-gid="" aria-pressed="${!d.groupId}">Ninguno</button>${groupList().map(x => `<button style="${rc(x.color)}" data-act="pickGroup" data-gid="${x.id}" aria-pressed="${x.id === d.groupId}">${esc(x.name)}</button>`).join('')}</div></div>
       <div class="sheet-actions">${d._new ? '<span></span>' : `<button class="btn ${UI.confirmDel ? 'danger' : 'ghost'}" data-act="delTask">${UI.confirmDel ? 'Toca otra vez para borrar' : 'Borrar tarea'}</button>`}<button class="btn" data-act="saveTask">${d._new ? 'Añadir tarea' : 'Guardar'}</button></div>`;
+  } else if (UI.sheet === 'dayitem'){
+    const r = S.routines[d.id], g = groupOf(r); color = g ? g.color : TASK_COLOR;
+    const st = S.days[UI.date]?.items?.[d.id] || {};
+    html = `${head(esc(r?.name || 'Rutina'))}
+      <p class="hint" style="font-size:14px">${esc([g?.name, fmtMin(+r?.minutes||0), r?.time ? 'a las ' + r.time : 'sin hora', freqLabel(r || {})].filter(Boolean).join(' · '))}</p>
+      <div class="card" style="gap:10px">
+        <b>Solo ${UI.date === today() ? 'hoy' : 'el ' + esc(dateLabel(UI.date, {weekday:'long', day:'numeric'}))}</b>
+        <p class="hint">Quita esta rutina de este día sin tocar la rutina: los demás días seguirá apareciendo y no contará como no hecha.</p>
+        <button class="btn ghost" data-act="skipDay" style="align-self:flex-start">${st.done ? 'Desmarcar y quitar de este día' : 'Quitar de este día'}</button>
+      </div>
+      <div class="card" style="gap:10px">
+        <b>Todos los días</b>
+        <p class="hint">Cambia el nombre, los minutos, la hora o los días de la rutina. Para eliminarla del todo, hazlo desde la pestaña Rutinas.</p>
+        <button class="btn ghost" data-act="editFromDay" style="align-self:flex-start">Editar rutina</button>
+      </div>`;
   } else if (UI.sheet === 'note'){
     color = 4;
     const opts = [`<option value="">Nota general</option>`];
@@ -1086,7 +1112,18 @@ function act(a, b){
     }
     case 'runPause': stopRun(false); break;
     case 'runDone': stopRun(true); break;
-    case 'openItem': if (key.startsWith('t:')) openTask(key); else openRoutine(key); break;
+    case 'openItem': if (key.startsWith('t:')) openTask(key); else openDayItem(key); break;
+    case 'editFromDay': { const rid = UI.draft.id; closeSheet(); openRoutine(rid); break; }
+    case 'skipDay': {
+      const rid = UI.draft.id, date = UI.date, r = S.routines[rid];
+      const prev = clone(S.days[date]?.items?.[rid] || null);
+      if (RUN && RUN.key === rid && RUN.date === date){ RUN = null; lsSet('rutinas-run', null); keepAwake(false); }
+      setEntry(date, rid, x => { x.skipped = true; x.done = false; x.doneAt = null; });
+      closeSheet(); render();
+      showUndo(`«${r?.name || 'Rutina'}» quitada de este día`, () => { const doc = dayDoc(date); doc.items ||= {}; doc.tasks ||= []; if (prev) doc.items[rid] = prev; else delete doc.items[rid]; saveDay(date, doc); });
+      break;
+    }
+    case 'unskip': { const rid = b.dataset.rid; setEntry(UI.date, rid, x => { delete x.skipped; }); render(); break; }
     case 'editSpent': UI.editSpent = key; render(); setTimeout(() => { const n = $('#spent-input'); if (n){ n.focus(); n.select(); } }, 30); break;
     case 'saveSpent': { const v = Math.max(0, +($('#spent-input')?.value) || 0); UI.editSpent = null; setEntry(UI.date, key, x => { x.spentSec = Math.round(v*60); }); render(); break; }
     case 'carry': {
