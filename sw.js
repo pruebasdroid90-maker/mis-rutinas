@@ -1,5 +1,5 @@
 // Guarda la app en el móvil para que abra aunque no haya conexión.
-const CACHE = 'mis-rutinas-v1';
+const CACHE = 'mis-rutinas-v3';
 const SHELL = ['./', './index.html', './config.js', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -17,7 +17,7 @@ self.addEventListener('fetch', e => {
   const staticLib = url.hostname === 'www.gstatic.com' || url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
   if (sameOrigin){
     // Primero la red (para recibir actualizaciones); si no hay conexión, la copia guardada.
-    e.respondWith(fetch(req).then(res => {
+    e.respondWith(fetch(req, { cache: 'no-cache' }).then(res => {
       if (res.ok){ const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
       return res;
     }).catch(() => caches.match(req).then(r => r || caches.match('./index.html'))));
